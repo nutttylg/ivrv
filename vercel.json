@@ -1,0 +1,7 @@
+{
+  "buildCommand": "bun install",
+  "devCommand": "bun run server-v3.ts",
+  "installCommand": "curl -fsSL https://bun.sh/install | bash && bun install",
+  "framework": null,
+  "outputDirectory": "."
+}

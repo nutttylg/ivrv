@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implied vs Realized V2 | Options Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 10px;
+            line-height: 1.3;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #999;
+            font-size: 0.75rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .tab:hover {
+            border-color: #666;
+        }
+
+        .tab.active {
+            background: #2a2a2a;
+            border-color: #fff;
+        }
+
+        .tab-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .tab-subtitle {
+            font-size: 0.7rem;
+            color: #999;
+        }
+
+        .main-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #999;
+            font-size: 0.75rem;
+        }
+
+        .metric-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .metric-value.large {
+            font-size: 1.1rem;
+        }
+
+        .metric-value.green {
+            color: #4ade80;
+        }
+
+        .metric-value.red {
+            color: #ef4444;
+        }
+
+        .metric-value.yellow {
+            color: #fbbf24;
+        }
+
+        .surprise-display {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .surprise-ratio {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .surprise-label {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.high {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .status-badge.normal {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+        }
+
+        .status-badge.low {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid #4ade80;
+            color: #4ade80;
+        }
+
+        .signal-box {
+            background: #2a2a2a;
+            border-left: 3px solid #666;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80 0%, #fbbf24 50%, #ef4444 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.7rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .refresh-btn {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #666;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin: 8px auto;
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .main-display {
+                grid-template-columns: 1fr;
+            }
+
+            .surprise-ratio {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 IMPLIED vs REALIZED V2</h1>
+            <p>Options Edition • Specific Strikes & Expiries</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('weekly')" id="tabWeekly">
+                <div class="tab-title">📅 WEEKLY</div>
+                <div class="tab-subtitle" id="weeklySubtitle">Loading...</div>
+            </div>
+            <div class="tab" onclick="switchTab('monthly')" id="tabMonthly">
+                <div class="tab-title">📆 MONTHLY</div>
+                <div class="tab-subtitle" id="monthlySubtitle">Loading...</div>
+            </div>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div>Loading options data...</div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Snapshot</button>
+    </div>
+
+    <script>
+        let currentData = null;
+        let activeTab = 'weekly';
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('tabWeekly').classList.toggle('active', tab === 'weekly');
+            document.getElementById('tabMonthly').classList.toggle('active', tab === 'monthly');
+            renderDisplay();
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/current');
+                if (!response.ok) {
+                    throw new Error('Data not ready');
+                }
+                currentData = await response.json();
+                updateTabTitles();
+                renderDisplay();
+            } catch (error) {
+                console.error('Error:', error);
+                setTimeout(fetchData, 5000);
+            }
+        }
+
+        function updateTabTitles() {
+            if (!currentData) return;
+
+            const { snapshot } = currentData;
+
+            document.getElementById('weeklySubtitle').textContent =
+                `${snapshot.weeklyOption.strike}K | ${snapshot.weeklyOption.expiry} | ${snapshot.weeklyOption.daysToExpiry.toFixed(1)}d`;
+
+            document.getElementById('monthlySubtitle').textContent =
+                `${snapshot.monthlyOption.strike}K | ${snapshot.monthlyOption.expiry} | ${snapshot.monthlyOption.daysToExpiry.toFixed(1)}d`;
+        }
+
+        function renderDisplay() {
+            if (!currentData) return;
+
+            const { snapshot, realtime, stats } = currentData;
+            const option = activeTab === 'weekly' ? snapshot.weeklyOption : snapshot.monthlyOption;
+            const surpriseRatio = activeTab === 'weekly' ? realtime.weeklySurpriseRatio : realtime.monthlySurpriseRatio;
+            const status = activeTab === 'weekly' ? realtime.weeklyStatus : realtime.monthlyStatus;
+            const signal = activeTab === 'weekly' ? realtime.weeklySignal : realtime.monthlySignal;
+
+            const surpriseColor = surpriseRatio > 1.3 ? 'red' : surpriseRatio < 0.7 ? 'green' : 'yellow';
+            const statusClass = status === 'HIGH_VOL' ? 'high' : status === 'LOW_VOL' ? 'low' : 'normal';
+            const progressPercent = Math.min((surpriseRatio / 2) * 100, 100);
+
+            // Calculate daily implied move
+            const dailyImpliedMove = option.impliedMove * Math.sqrt(1 / option.daysToExpiry);
+            const dailyImpliedMovePercent = (dailyImpliedMove / snapshot.spotPrice) * 100;
+
+            // Historical stats
+            const avgSurprise = activeTab === 'weekly' ? stats.weeklyAvgSurprise : stats.monthlyAvgSurprise;
+            const trend = activeTab === 'weekly' ? stats.weeklyTrend : stats.monthlyTrend;
+            const trendArrow = trend === 'UP' ? '↑' : trend === 'DOWN' ? '↓' : '→';
+            const trendColor = trend === 'UP' ? 'red' : trend === 'DOWN' ? 'green' : 'yellow';
+
+            document.getElementById('content').innerHTML = `
+                <!-- Surprise Ratio -->
+                <div class="surprise-display">
+                    <div class="surprise-label">Surprise Ratio (${activeTab.toUpperCase()})</div>
+                    <div class="surprise-ratio ${surpriseColor}">${surpriseRatio.toFixed(2)}x</div>
+                    <div class="status-badge ${statusClass}">${status.replace('_', ' ')}</div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%">
+                            ${surpriseRatio.toFixed(2)}x
+                        </div>
+                    </div>
+
+                    <div class="signal-box">${signal}</div>
+                </div>
+
+                <!-- Main Display -->
+                <div class="main-display">
+                    <!-- Option Details -->
+                    <div class="card">
+                        <div class="card-title">📄 ${activeTab.toUpperCase()} Option Contract</div>
+
+                        <div class="metric">
+                            <span class="metric-label">Instrument</span>
+                            <span class="metric-value" style="font-size: 0.9rem;">${option.instrumentName}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Strike</span>
+                            <span class="metric-value">$${option.strike.toLocaleString()}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Expiry</span>
+                            <span class="metric-value">${option.expiry}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Days to Expiry</span>
+                            <span class="metric-value">${option.daysToExpiry.toFixed(1)} days</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">ATM IV (Avg)</span>
+                            <span class="metric-value large green">${option.atmIV.toFixed(2)}%</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Bid IV / Ask IV</span>
+                            <span class="metric-value">${option.bidIV.toFixed(2)}% / ${option.askIV.toFixed(2)}%</span>
+                        </div>
+                    </div>
+
+                    <!-- Implied Movement -->
+                    <div class="card">
+                        <div class="card-title">📐 Implied Movement</div>
+
+                        <div class="metric">
+                            <span class="metric-label">Spot Price</span>
+                            <span class="metric-value">$${snapshot.spotPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">To Expiry ($)</span>
+                            <span class="metric-value">$${option.impliedMove.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">To Expiry (%)</span>
+                            <span class="metric-value">${option.impliedMovePercent.toFixed(2)}%</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Daily Move ($)</span>
+                            <span class="metric-value large green">$${dailyImpliedMove.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Daily Move (%)</span>
+                            <span class="metric-value large green">${dailyImpliedMovePercent.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Realized -->
+                <div class="main-display">
+                    <div class="card">
+                        <div class="card-title">📈 Realized Movement (Today)</div>
+
+                        <div class="metric">
+                            <span class="metric-label">Time Elapsed</span>
+                            <span class="metric-value">${realtime.timeElapsed.toFixed(1)} hours</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Current Price</span>
+                            <span class="metric-value">$${realtime.currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Day's High</span>
+                            <span class="metric-value">$${realtime.dayHigh.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Day's Low</span>
+                            <span class="metric-value">$${realtime.dayLow.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Actual Range ($)</span>
+                            <span class="metric-value large ${surpriseColor}">$${realtime.actualRange.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Actual Range (%)</span>
+                            <span class="metric-value large ${surpriseColor}">${realtime.actualRangePercent.toFixed(2)}%</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🎯 Comparison</div>
+
+                        <div class="metric">
+                            <span class="metric-label">Implied Daily Move</span>
+                            <span class="metric-value">$${dailyImpliedMove.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Actual Range</span>
+                            <span class="metric-value">$${realtime.actualRange.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Difference</span>
+                            <span class="metric-value ${realtime.actualRange > dailyImpliedMove ? 'red' : 'green'}">
+                                ${realtime.actualRange > dailyImpliedMove ? '+' : ''}$${(realtime.actualRange - dailyImpliedMove).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                            </span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Surprise Ratio</span>
+                            <span class="metric-value large ${surpriseColor}">${surpriseRatio.toFixed(2)}x</span>
+                        </div>
+
+                        <div class="metric">
+                            <span class="metric-label">Range Utilization</span>
+                            <span class="metric-value">${((realtime.actualRange / dailyImpliedMove) * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${stats.daysTracked > 0 ? `
+                <!-- Historical Stats -->
+                <div class="card" style="margin-top: 10px;">
+                    <div class="card-title">📊 Historical Context (${stats.daysTracked} days)</div>
+
+                    <div class="metric">
+                        <span class="metric-label">Avg Surprise Ratio</span>
+                        <span class="metric-value">${avgSurprise.toFixed(2)}x</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="metric-label">Recent Trend</span>
+                        <span class="metric-value ${trendColor}">${trendArrow} ${trend}</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="metric-label">vs Current</span>
+                        <span class="metric-value ${surpriseRatio > avgSurprise ? 'red' : 'green'}">
+                            ${surpriseRatio > avgSurprise ? '+' : ''}${(surpriseRatio - avgSurprise).toFixed(2)}x ${surpriseRatio > avgSurprise ? 'above' : 'below'} avg
+                        </span>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        async function refreshData() {
+            const btn = document.querySelector('.refresh-btn');
+            btn.textContent = '⏳ Refreshing...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/refresh');
+                if (response.ok) {
+                    await fetchData();
+                    btn.textContent = '✓ Refreshed!';
+                } else {
+                    btn.textContent = '✗ Error';
+                }
+            } catch (error) {
+                btn.textContent = '✗ Error';
+            }
+
+            setTimeout(() => {
+                btn.textContent = '🔄 Refresh Snapshot';
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchData, 30000);
+
+        // Initial load
+        fetchData();
+    </script>
+</body>
+</html>

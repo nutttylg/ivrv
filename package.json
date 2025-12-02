@@ -1,0 +1,14 @@
+{
+  "name": "ivrv",
+  "version": "1.0.0",
+  "description": "Implied vs Realized Volatility Tracker for Bitcoin Options",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run server-v3.ts",
+    "start": "bun run server-v3.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
