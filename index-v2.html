@@ -345,10 +345,10 @@
             const { snapshot } = currentData;
 
             document.getElementById('weeklySubtitle').textContent =
-                `${snapshot.weeklyOption.strike}K | ${snapshot.weeklyOption.expiry} | ${snapshot.weeklyOption.daysToExpiry.toFixed(1)}d`;
+                `${(snapshot.weeklyOption.strike / 1000).toFixed(0)}K | ${snapshot.weeklyOption.expiry} | ${snapshot.weeklyOption.daysToExpiry.toFixed(1)}d`;
 
             document.getElementById('monthlySubtitle').textContent =
-                `${snapshot.monthlyOption.strike}K | ${snapshot.monthlyOption.expiry} | ${snapshot.monthlyOption.daysToExpiry.toFixed(1)}d`;
+                `${(snapshot.monthlyOption.strike / 1000).toFixed(0)}K | ${snapshot.monthlyOption.expiry} | ${snapshot.monthlyOption.daysToExpiry.toFixed(1)}d`;
         }
 
         function renderDisplay() {
