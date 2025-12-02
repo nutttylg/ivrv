@@ -1,12 +1,10 @@
 {
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/api/index"
-    },
-    {
       "source": "/api/current",
-      "destination": "/api/current"
+      "destination": "/api/current.ts"
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
