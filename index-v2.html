@@ -364,9 +364,9 @@
             const statusClass = status === 'HIGH_VOL' ? 'high' : status === 'LOW_VOL' ? 'low' : 'normal';
             const progressPercent = Math.min((surpriseRatio / 2) * 100, 100);
 
-            // Calculate daily implied move
-            const dailyImpliedMove = option.impliedMove * Math.sqrt(1 / option.daysToExpiry);
-            const dailyImpliedMovePercent = (dailyImpliedMove / snapshot.spotPrice) * 100;
+            // Use the daily implied move from API (already calculated)
+            const dailyImpliedMove = option.impliedDailyMove;
+            const dailyImpliedMovePercent = option.impliedDailyMovePercent;
 
             // Historical stats
             const avgSurprise = activeTab === 'weekly' ? stats.weeklyAvgSurprise : stats.monthlyAvgSurprise;
